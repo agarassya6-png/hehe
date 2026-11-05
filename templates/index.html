@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Happy Birthday 🎂</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+
+  <!-- ===== VAULT SCREEN ===== -->
+  <div id="vault-screen">
+    <div class="vault-bg"></div>
+    <div class="particles" id="particles"></div>
+
+    <div class="vault-container">
+      <div class="vault-top-label">✦ FOR THE ONE I LOVE ✦</div>
+
+      <div class="vault-door" id="vaultDoor">
+        <div class="vault-door-inner">
+          <div class="vault-dial-wrap">
+            <div class="vault-dial" id="dial">
+              <div class="dial-marker"></div>
+              <div class="dial-center"></div>
+              <div class="dial-numbers">
+                <span style="--i:0">12</span><span style="--i:1">1</span>
+                <span style="--i:2">2</span><span style="--i:3">3</span>
+                <span style="--i:4">4</span><span style="--i:5">5</span>
+                <span style="--i:6">6</span><span style="--i:7">7</span>
+                <span style="--i:8">8</span><span style="--i:9">9</span>
+                <span style="--i:10">10</span><span style="--i:11">11</span>
+              </div>
+            </div>
+          </div>
+          <div class="vault-bolt bolt-tl"></div>
+          <div class="vault-bolt bolt-tr"></div>
+          <div class="vault-bolt bolt-bl"></div>
+          <div class="vault-bolt bolt-br"></div>
+        </div>
+      </div>
+
+      <div class="vault-form-area">
+        <p class="vault-hint">Enter the secret word to unlock the vault</p>
+        <div class="vault-input-wrap">
+          <input type="password" id="passwordInput" placeholder="••••••••" maxlength="30"
+            autocomplete="off" spellcheck="false"/>
+          <button id="unlockBtn" onclick="tryUnlock()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Open
+          </button>
+        </div>
+        <p class="vault-error" id="errorMsg"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== BLOOM ANIMATION OVERLAY ===== -->
+  <div id="bloom-overlay" class="hidden">
+    <canvas id="bloomCanvas"></canvas>
+    <div class="bloom-text" id="bloomText">Happy Birthday,<br>{{ name }} 🩵</div>
+  </div>
+
+  <!-- ===== BIRTHDAY SCREEN — PAGE-BASED ===== -->
+  <div id="birthday-screen" class="hidden">
+    <canvas id="romanceCanvas"></canvas>
+    <div id="petals-container"></div>
+
+    <!-- FLOATING MUSIC TOGGLE -->
+    <button class="music-toggle-btn" id="musicToggleBtn" onclick="toggleRomanticMusic()" title="Play / Pause Sweet Melody">
+      <span class="music-icon">✨</span>
+      <span class="music-label">Sweet Melody</span>
+    </button>
+
+    <!-- PAGE DOTS NAVIGATION -->
+    <div class="page-dots" id="pageDots"></div>
+
+    <!-- NAV ARROWS -->
+    <button class="nav-arrow nav-prev" id="navPrev" onclick="changePage(-1)">&#8249;</button>
+    <button class="nav-arrow nav-next" id="navNext" onclick="changePage(1)">&#8250;</button>
+
+    <!-- PAGES WRAPPER -->
+    <div class="pages-wrapper" id="pagesWrapper">
+
+      <!-- PAGE 1: HERO -->
+      <div class="page" data-page="0">
+        <div class="hero-stars" id="heroStars"></div>
+        <div class="hero-content">
+          <div class="hero-calligraphy">Forever & Always Yours</div>
+          <div class="hero-eyebrow">✦ My Brightest Star ✦</div>
+          <h1 class="hero-name">{{ name }}</h1>
+          <div class="hero-heart">🩵</div>
+          <p class="hero-sub">from {{ your_name }}, with endless love</p>
+        </div>
+        <div class="page-hint">Tap ▶ to continue ✨</div>
+      </div>
+
+      <!-- PAGE 2: MESSAGE (LOVE LETTER) -->
+      <div class="page" data-page="1">
+        <div class="message-card love-letter">
+          <div class="letter-seal">
+            <span class="seal-inner">🌙</span>
+          </div>
+          <div class="letter-salutation">My Dearest Love,</div>
+          <blockquote class="message-text">{{ message }}</blockquote>
+          <div class="message-sig">
+            <span class="sig-prefix">With all my love,</span>
+            <span class="sig-name">{{ your_name }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE 3: GALLERY -->
+      <div class="page page-gallery" data-page="2">
+        <div class="gallery-header">
+          <h2>Our Memories</h2>
+          <p class="gallery-sub">every chapter with you is my favorite story</p>
+          <div class="gallery-divider"></div>
+        </div>
+        <div class="gallery-grid" id="galleryGrid">
+          {% for photo in photos %}
+          <div class="gallery-item" style="animation-delay: {{ loop.index0 * 0.12 }}s">
+            <div class="polaroid"
+                 data-src="{{ url_for('static', filename='images/' + photo.src) }}"
+                 data-caption="{{ photo.caption }}"
+                 data-message="{{ photo.message }}">
+              <div class="polaroid-img-wrap">
+                <img src="{{ url_for('static', filename='images/' + photo.src) }}"
+                     alt="{{ photo.caption }}"
+                     onerror="this.parentElement.classList.add('placeholder')"
+                     loading="lazy"/>
+                <div class="polaroid-hover-hint">✦ Click to open ✦</div>
+              </div>
+              <div class="polaroid-caption">{{ photo.caption }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- PAGE 4: MAKE A WISH -->
+      <div class="page" data-page="3">
+        <div class="wish-container">
+          <div class="wish-eyebrow">✦ Make a Wish ✦</div>
+          <h2 class="wish-title">Make Your Wish</h2>
+          <p class="wish-sub">Close your eyes, make a wish in your heart,<br/>then blow out the candles…</p>
+
+          <div class="cake-wrap">
+            <canvas id="cakeCanvas" width="340" height="260"></canvas>
+            <div class="candle-smoke-wrap" id="smokewrap"></div>
+          </div>
+
+          <div class="mic-area" id="micArea">
+            <button class="mic-btn" id="micBtn" onclick="startBlowDetection()">
+              <span class="mic-icon">🎤</span>
+              <span class="mic-label">Press & Blow Mic</span>
+            </button>
+            <p class="mic-hint" id="micHint">Press the button then blow hard into your mic!</p>
+            <div class="mic-meter-wrap" id="micMeterWrap" style="display:none">
+              <div class="mic-meter-bar" id="micMeterBar"></div>
+              <p class="mic-meter-label" id="micMeterLabel">Blow harder… 💨</p>
+            </div>
+          </div>
+
+          <div class="wish-granted" id="wishGranted" style="display:none">
+            <div class="wish-granted-text">
+              <div class="wish-granted-emoji">🌟</div>
+              <h3 class="wish-granted-title">Happy Birthday!</h3>
+              <p class="wish-granted-msg">May all your wishes come true.<br/>I will always love you to the moon and back. 🩵✨</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE 5: MOONLIT GARDEN CLOSING -->
+      <div class="page page-blue-flower" data-page="4">
+        <canvas id="blueFlowerCanvas"></canvas>
+        <div class="blue-flower-text" id="blueFlowerText">
+          <p class="blue-flower-note">blooming beneath a midnight sky</p>
+          <p class="blue-flower-note-sub">because you are my calm, my starry night, and my forever 💙✨</p>
+        </div>
+      </div>
+
+    </div><!-- end pages-wrapper -->
+
+    <!-- Photo Modal -->
+    <div id="photoModal" class="photo-modal">
+      <div class="photo-modal-backdrop" onclick="closePhotoModal()"></div>
+      <div class="photo-modal-card">
+        <button class="photo-modal-close" onclick="closePhotoModal()">✕</button>
+        <div class="photo-modal-img-wrap">
+          <img id="modalImg" src="" alt=""/>
+        </div>
+        <div class="photo-modal-body">
+          <h3 class="photo-modal-title" id="modalTitle"></h3>
+          <div class="photo-modal-divider"></div>
+          <p class="photo-modal-message" id="modalMessage"></p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
