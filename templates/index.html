@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Happy Birthday 🎂</title>
+  <title>A Little Gift For Laura 💖</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet"/>
@@ -62,7 +62,7 @@
   <!-- ===== BLOOM ANIMATION OVERLAY ===== -->
   <div id="bloom-overlay" class="hidden">
     <canvas id="bloomCanvas"></canvas>
-    <div class="bloom-text" id="bloomText">Happy Birthday,<br>{{ name }} 🩵</div>
+    <div class="bloom-text" id="bloomText">A Little Gift For You,<br>{{ name }} 💖✨</div>
   </div>
 
   <!-- ===== BIRTHDAY SCREEN — PAGE-BASED ===== -->
@@ -91,9 +91,9 @@
         <div class="hero-stars" id="heroStars"></div>
         <div class="hero-content">
           <div class="hero-calligraphy">Forever & Always Yours</div>
-          <div class="hero-eyebrow">✦ My Brightest Star ✦</div>
+          <div class="hero-eyebrow">✦ A Special Gift Just For You ✦</div>
           <h1 class="hero-name">{{ name }}</h1>
-          <div class="hero-heart">🩵</div>
+          <div class="hero-heart">💖</div>
           <p class="hero-sub">from {{ your_name }}, with endless love</p>
         </div>
         <div class="page-hint">Tap ▶ to continue ✨</div>
@@ -105,7 +105,7 @@
           <div class="letter-seal">
             <span class="seal-inner">🌙</span>
           </div>
-          <div class="letter-salutation">My Dearest Love,</div>
+          <div class="letter-salutation">My Dearest Love, Laura,</div>
           <blockquote class="message-text">{{ message }}</blockquote>
           <div class="message-sig">
             <span class="sig-prefix">With all my love,</span>
@@ -117,7 +117,7 @@
       <!-- PAGE 3: GALLERY -->
       <div class="page page-gallery" data-page="2">
         <div class="gallery-header">
-          <h2>Our Memories</h2>
+          <h2>Our Sweet Memories</h2>
           <p class="gallery-sub">every chapter with you is my favorite story</p>
           <div class="gallery-divider"></div>
         </div>
@@ -142,46 +142,175 @@
         </div>
       </div>
 
-      <!-- PAGE 4: MAKE A WISH -->
+      <!-- PAGE 4: DO YOU LOVE ME? -->
       <div class="page" data-page="3">
-        <div class="wish-container">
-          <div class="wish-eyebrow">✦ Make a Wish ✦</div>
-          <h2 class="wish-title">Make Your Wish</h2>
-          <p class="wish-sub">Close your eyes, make a wish in your heart,<br/>then blow out the candles…</p>
-
-          <div class="cake-wrap">
-            <canvas id="cakeCanvas" width="340" height="260"></canvas>
-            <div class="candle-smoke-wrap" id="smokewrap"></div>
+        <div class="love-q-container">
+          <div class="game-badge">✦ A SINCERE QUESTION ✦</div>
+          <div class="love-mascot">
+            <span class="mascot-heart">💖</span>
+            <span class="mascot-sparkle">✨</span>
           </div>
-
-          <div class="mic-area" id="micArea">
-            <button class="mic-btn" id="micBtn" onclick="startBlowDetection()">
-              <span class="mic-icon">🎤</span>
-              <span class="mic-label">Press & Blow Mic</span>
+          <h2 class="love-q-title">Sayang gak sama aku? 🥺</h2>
+          <p class="love-q-sub">Jawab yang jujur yaa, jangan bohong! 🥰</p>
+          
+          <div class="love-answers-wrap" id="loveAnswersWrap">
+            <button class="btn-love-yes" id="btnLoveYes" onclick="handleLoveYes()">
+              IYA, SAYANG BANGET! 💖
             </button>
-            <p class="mic-hint" id="micHint">Press the button then blow hard into your mic!</p>
-            <div class="mic-meter-wrap" id="micMeterWrap" style="display:none">
-              <div class="mic-meter-bar" id="micMeterBar"></div>
-              <p class="mic-meter-label" id="micMeterLabel">Blow harder… 💨</p>
-            </div>
+            <button class="btn-love-no" id="btnLoveNo">
+              Enggak 😒
+            </button>
           </div>
+          
+          <p class="love-dodge-hint" id="dodgeHint">Ayo coba pencet kalau bisa~ 😜</p>
+        </div>
 
-          <div class="wish-granted" id="wishGranted" style="display:none">
-            <div class="wish-granted-text">
-              <div class="wish-granted-emoji">🌟</div>
-              <h3 class="wish-granted-title">Happy Birthday!</h3>
-              <p class="wish-granted-msg">May all your wishes come true.<br/>I will always love you to the moon and back. 🩵✨</p>
-            </div>
+        <!-- Yes Popup Modal -->
+        <div class="love-yes-modal hidden" id="loveYesModal">
+          <div class="love-yes-backdrop" onclick="closeLoveYesModal()"></div>
+          <div class="love-yes-card">
+            <div class="love-yes-icon">🎉🥰💖</div>
+            <h3 class="love-yes-title">YAAAY! I KNEW IT!</h3>
+            <p class="love-yes-desc">
+              Aku juga sayang bangeet bangeet sama kamu, Laura! 💕<br/>
+              Makasih udah selalu jadi orang paling berharga buat aku.<br/>
+              <i>Love you always and forever! 🫶✨</i>
+            </p>
+            <button class="btn-game-primary" onclick="closeLoveYesModal(); goToPage(4);">
+              Lanjut Main Games Bareng! 🎮▶
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- PAGE 5: MOONLIT GARDEN CLOSING -->
-      <div class="page page-blue-flower" data-page="4">
+      <!-- PAGE 5: GAME XOXO (TIC-TAC-TOE) -->
+      <div class="page" data-page="4">
+        <div class="xoxo-container">
+          <div class="game-badge">✦ ROMANTIC MINIGAME ✦</div>
+          <h2 class="game-title">XOXO — Love Tic-Tac-Toe</h2>
+          <p class="game-sub">Buktikan siapa yang paling jago! 💖 Laura vs Hapis 💙</p>
+          
+          <div class="xoxo-mode-toggle">
+            <button class="mode-btn active" id="btnModeAI" onclick="setXoxoMode('ai')">Lawan Hapis AI 🤖</button>
+            <button class="mode-btn" id="btnMode2P" onclick="setXoxoMode('2p')">Main Berdua 👥</button>
+          </div>
+
+          <div class="xoxo-scoreboard">
+            <div class="score-card player-x active" id="scoreCardX">
+              <span class="score-avatar">💖</span>
+              <span class="score-name">Laura</span>
+              <span class="score-num" id="scoreX">0</span>
+            </div>
+            <div class="score-card player-tie">
+              <span class="score-avatar">🤝</span>
+              <span class="score-name">Seri</span>
+              <span class="score-num" id="scoreTie">0</span>
+            </div>
+            <div class="score-card player-o" id="scoreCardO">
+              <span class="score-avatar">💙</span>
+              <span class="score-name">Hapis</span>
+              <span class="score-num" id="scoreO">0</span>
+            </div>
+          </div>
+
+          <div class="xoxo-status" id="xoxoStatus">Giliran Laura 💖</div>
+
+          <div class="xoxo-board" id="xoxoBoard">
+            <button class="xoxo-cell" data-idx="0"></button>
+            <button class="xoxo-cell" data-idx="1"></button>
+            <button class="xoxo-cell" data-idx="2"></button>
+            <button class="xoxo-cell" data-idx="3"></button>
+            <button class="xoxo-cell" data-idx="4"></button>
+            <button class="xoxo-cell" data-idx="5"></button>
+            <button class="xoxo-cell" data-idx="6"></button>
+            <button class="xoxo-cell" data-idx="7"></button>
+            <button class="xoxo-cell" data-idx="8"></button>
+          </div>
+
+          <div class="game-actions">
+            <button class="btn-game-secondary" onclick="resetXoxoBoard()">Main Lagi 🔄</button>
+            <button class="btn-game-primary" onclick="goToPage(5)">Game Lucu Selanjutnya 🎮▶</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE 6: GAME LUCU (TANGKAP HATIKU) -->
+      <div class="page" data-page="5">
+        <div class="catch-container">
+          <div class="game-badge">✦ CUTE MINIGAME ✦</div>
+          <h2 class="game-title">Tangkap Hatiku! 💖</h2>
+          <p class="game-sub">Gerakkan keranjang cinta untuk mengumpulkan cintaku! Capai 100 poin yaa!</p>
+
+          <div class="catch-stats-bar">
+            <div class="stat-pill">
+              <span class="stat-label">Skor</span>
+              <span class="stat-value" id="catchScore">0 / 100</span>
+            </div>
+            <div class="stat-progress-wrap">
+              <div class="stat-progress-fill" id="catchProgress"></div>
+            </div>
+            <div class="stat-pill">
+              <span class="stat-label">Waktu</span>
+              <span class="stat-value" id="catchTimer">30s</span>
+            </div>
+          </div>
+
+          <div class="catch-game-area" id="catchGameArea">
+            <canvas id="catchCanvas" width="360" height="380"></canvas>
+            
+            <!-- Start Overlay -->
+            <div class="catch-overlay" id="catchStartOverlay">
+              <div class="overlay-content">
+                <span class="overlay-icon">🧺💖</span>
+                <h3>Siap Tangkap Cinta?</h3>
+                <p>Tangkap 💖 (+10), ⭐ (+15), 💌 (+20)<br/>Hindari awan mendung 🌧️ (-5)!</p>
+                <button class="btn-game-primary" onclick="startCatchGame()">Mulai Main! 🚀</button>
+              </div>
+            </div>
+
+            <!-- Win Overlay -->
+            <div class="catch-overlay hidden" id="catchWinOverlay">
+              <div class="overlay-content win-card">
+                <span class="overlay-icon">🏆🎉</span>
+                <h3>KAMU MENANG!</h3>
+                <p class="win-sub">Semua cintaku berhasil kamu tangkap seutuhnya! 🥰</p>
+                <div class="love-voucher">
+                  <div class="voucher-tag">🎟️ SPECIAL LOVE VOUCHER</div>
+                  <div class="voucher-title">1x Bebas Minta Apa Saja</div>
+                  <div class="voucher-sub">Traktir makan, jalan-jalan, atau peluk manja. Berlaku selamanya untuk Laura! 💖</div>
+                </div>
+                <div class="win-btns">
+                  <button class="btn-game-secondary" onclick="startCatchGame()">Main Lagi 🔄</button>
+                  <button class="btn-game-primary" onclick="goToPage(6)">Buka Pesan Terakhir 🌸▶</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Game Over Overlay -->
+            <div class="catch-overlay hidden" id="catchLoseOverlay">
+              <div class="overlay-content">
+                <span class="overlay-icon">🥺💔</span>
+                <h3>Waktu Habis!</h3>
+                <p>Sedikit lagi tuh! Coba tangkap lagi yuk sayang~</p>
+                <button class="btn-game-primary" onclick="startCatchGame()">Coba Lagi 🔄</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Touch controls for mobile -->
+          <div class="catch-touch-controls">
+            <button class="touch-btn" id="btnMoveLeft">◀ Geser Kiri</button>
+            <button class="touch-btn" id="btnMoveRight">Geser Kanan ▶</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE 7: MOONLIT GARDEN CLOSING -->
+      <div class="page page-blue-flower" data-page="6">
         <canvas id="blueFlowerCanvas"></canvas>
         <div class="blue-flower-text" id="blueFlowerText">
-          <p class="blue-flower-note">blooming beneath a midnight sky</p>
-          <p class="blue-flower-note-sub">because you are my calm, my starry night, and my forever 💙✨</p>
+          <p class="blue-flower-note">blooming beneath our starry night</p>
+          <p class="blue-flower-note-sub">Hadiah kecil ini tanda cinta tulus dari aku. Terima kasih untuk setiap detik yang kita lalui bersama. Aku selalu mencintaimu, Laura Adelsia — hari ini, esok, dan selamanya 💙✨</p>
         </div>
       </div>
 

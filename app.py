@@ -2,68 +2,58 @@ from flask import Flask, render_template, request, jsonify, session
 import os
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "birthday-tribute-secret-05112008")
+app.secret_key = os.environ.get("SECRET_KEY", "birthday-tribute-secret-030425")
 
 # ============================
 # GANTI SESUAI KEINGINAN KAMU
 # ============================
-SECRET_PASSWORD = "05112008"        # Password brankas
-BIRTHDAY_GIRL_NAME = "Inezia Novia Anakampun"       # Nama cewe kamu
-YOUR_NAME = "- yoyiccc"                  # Nama kamu
-BIRTHDAY_MESSAGE = "Thank you for everything — you mean the world to me. I love you, always and forever. 💕"
+SECRET_PASSWORD = "030425"        # Password brankas
+GIRL_NAME = "Laura Adelsia"       # Nama cewe kamu
+YOUR_NAME = "- hapiss"                  # Nama kamu
+GIFT_MESSAGE = "Hadiah kecil ini aku buat khusus untuk Laura tercinta. Terima kasih sudah hadir dalam hidupku, membawa senyum, tawa, dan kebahagiaan di setiap hari-hariku. Kamu adalah hal terbaik dan terindah yang pernah kumiliki. I love you, always and forever. 💕✨"
 
 # Photo list — place photos in the static/images/ folder
 # Format: {"src": "filename.jpg", "caption": "Photo title", "message": "Special words for this photo"}
 PHOTOS = [
     {
         "src": "photo1.jpg",
-        "caption": "Your Most Beautiful Smile",
-        "message": "Your smile is the first thing I look for every morning. Nothing is more beautiful than seeing you happy. 💕"
+        "caption": "Your Radiant Smile",
+        "message": "Senyum manis kamu yang selalu bikin kagum. Wanita hebat, anggun, dan selalu membanggakan dalam setiap hal yang kamu lakukan. 💕✨"
     },
     {
         "src": "photo2.jpg",
-        "caption": "A Precious Moment",
-        "message": "Every second with you feels like a miracle. I have never regretted a single moment we've shared together. 🌸"
+        "caption": "Leaning on You",
+        "message": "Bersandar di pundakmu selalu jadi momen ternyaman. Terima kasih sudah selalu jadi tempat pulang terhangat buat aku. 🥰🤍"
     },
     {
         "src": "photo3.jpg",
-        "caption": "You're My Happiness",
-        "message": "This photo always reminds me how lucky I am to know you. You are the best memory of my life. ✨"
+        "caption": "Our Silly & Cute Moments",
+        "message": "Tingkah konyol dan serunya kita berdua. Nggak pernah ada kata bosan kalau lagi ketawa bareng kamu! 😜💖"
     },
     {
         "src": "photo4.jpg",
-        "caption": "The World Is Colorful With You",
-        "message": "Before you, my life felt grey. You are the one who brought color, laughter, and warmth into every single day. 🌈"
+        "caption": "Cutest Expressions",
+        "message": "Tiap ekspresi lucu dan kedipan manis kamu selalu sukses bikin hari-hariku jauh lebih ceria dan berwarna. 🌸✨"
     },
     {
         "src": "photo5.jpg",
-        "caption": "Thank You For Everything",
-        "message": "Thank you for choosing to be here, in my life. You are the answer to a prayer I never even said out loud. 💖"
+        "caption": "Starlight in the Night",
+        "message": "Bahkan di tengah gelapnya malam, senyuman dan ketulusanmu selalu jadi cahaya paling terang buat aku. 🌙💙"
     },
     {
         "src": "photo6.jpg",
-        "caption": "So Adorable",
-        "message": "The way you act and carry yourself always makes me smile on my own. Never stop being exactly who you are. 🥰"
+        "caption": "Our Mall Date",
+        "message": "Jalan-jalan santai, mirror selfie, dan ketawa bareng kamu di mall. Sederhana tapi selalu jadi memori favoritku. 🛍️🖤"
     },
     {
         "src": "photo7.jpg",
-        "caption": "Our Funny Moment",
-        "message": "Every silly moment together with you is a sweet story I will never, ever forget. 🛍️✨"
+        "caption": "Cinema Date Memories",
+        "message": "Nonton bareng dan gandengan tangan sama kamu di bioskop. Bersamamu, tempat biasa selalu terasa begitu istimewa dan hangat. 🎬🍿"
     },
     {
         "src": "photo8.jpg",
-        "caption": "My Favorite Look",
-        "message": "I never get tired of looking at your beautiful face. There is always peace and happiness in your eyes. 💫"
-    },
-    {
-        "src": "photo9.jpg",
-        "caption": "Unmatched Beauty",
-        "message": "From any angle, you are always the most beautiful in my eyes. Every second I fall more in love. 🌷"
-    },
-    {
-        "src": "photo10.jpg",
-        "caption": "I Love You Always",
-        "message": "This love is real and true for you — today, tomorrow, and forever. Happy Birthday, my love! 💖"
+        "caption": "My Safest Comfort",
+        "message": "Di dekat kamu adalah tempat ternyaman dan terindah di dunia. Terima kasih sudah selalu ada. I love you always and forever! 💖✨"
     },
 ]
 # ============================
@@ -71,9 +61,9 @@ PHOTOS = [
 @app.route("/")
 def index():
     return render_template("index.html",
-        name=BIRTHDAY_GIRL_NAME,
+        name=GIRL_NAME,
         your_name=YOUR_NAME,
-        message=BIRTHDAY_MESSAGE,
+        message=GIFT_MESSAGE,
         photos=PHOTOS
     )
 
@@ -92,7 +82,7 @@ def check():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
-    app.run(debug=True, port=port)
+    app.run(debug=True, host="0.0.0.0", port=port)
 
 
 

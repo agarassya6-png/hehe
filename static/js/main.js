@@ -82,7 +82,7 @@ function showError(msg) {
 // ========================
 // PAGE NAVIGATION SYSTEM
 // ========================
-const TOTAL_PAGES = 5;
+const TOTAL_PAGES = 7;
 let currentPage = 0;
 let isAnimating = false;
 let touchStartX = 0;
@@ -142,10 +142,18 @@ function onPageEnter(page) {
     }, 200);
   }
   if (page === 3) {
-    // Make a wish — init cake if not yet
-    setTimeout(() => { if (!cakeInitialized) initCake(); }, 200);
+    // Do You Love Me page
+    initLoveQuestionPage();
   }
   if (page === 4) {
+    // XOXO Game page
+    initXoxoGame();
+  }
+  if (page === 5) {
+    // Catch Game page
+    initCatchGameCanvas();
+  }
+  if (page === 6) {
     // Blue flower — start animation
     setTimeout(startBlueFlowerAnimation, 200);
   }
@@ -864,193 +872,556 @@ function showBloomAnimation() {
 }
 
 // =============================================
-// MAKE A WISH — CANDLE + MIC BLOW DETECTION
 // =============================================
-let candleState = [];
-let cakeAnimFrame = null;
-let audioCtx = null, analyser = null, micStream = null;
-let isListening = false;
-let candlesBlown = 0;
-let cakeInitialized = false;
-const CANDLE_COUNT = 5;
-const BLOW_THRESHOLD = 18;
+// INTERACTIVE COMPONENT 1: DO YOU LOVE ME?
+// =============================================
+let loveDodgeAttempts = 0;
+const NO_BUTTON_TEXTS = [
+  "Enggak 😒",
+  "Yakin nih? 🥺",
+  "Eits gak kena! 😜",
+  "Gabisa dipencet wlee 😝",
+  "Tombol ini rusak loh! 😂",
+  "Pencet yang IYA aja sayang! 🥰",
+  "Gamau ah kabur terus 🏃💨",
+  "Gak bakal bisa diklik! 💖",
+  "Masih maksa aja sihh 🤣",
+  "Udah klik yang IYA aja deh! 💍"
+];
 
-function initCake() {
-  if (cakeInitialized) return;
-  cakeInitialized = true;
-  const canvas = document.getElementById("cakeCanvas");
-  if (!canvas) return;
-  const W = canvas.width, H = canvas.height;
-  const cakeTop = H * 0.30;
-  const cakeLeft = W * 0.18;
-  const cakeWidth = W * 0.64;
-  const spacing = cakeWidth / (CANDLE_COUNT - 1);
-  candleState = [];
-  for (let i = 0; i < CANDLE_COUNT; i++) {
-    candleState.push({ x: cakeLeft + i * spacing, y: cakeTop, lit: true, flickerOffset: Math.random() * Math.PI * 2, flickerSpeed: 0.08 + Math.random() * 0.06, extinguishing: false, extProgress: 0 });
+function initLoveQuestionPage() {
+  const btnNo = document.getElementById("btnLoveNo");
+  const btnYes = document.getElementById("btnLoveYes");
+  const hint = document.getElementById("dodgeHint");
+  loveDodgeAttempts = 0;
+
+  if (btnNo) {
+    btnNo.classList.remove("runaway");
+    btnNo.style.position = "";
+    btnNo.style.left = "";
+    btnNo.style.top = "";
+    btnNo.textContent = NO_BUTTON_TEXTS[0];
+
+    btnNo.onmouseenter = moveLoveNoButton;
+    btnNo.ontouchstart = (e) => {
+      e.preventDefault();
+      moveLoveNoButton();
+    };
+    btnNo.onclick = (e) => {
+      e.preventDefault();
+      moveLoveNoButton();
+    };
   }
-  drawCake();
+
+  if (btnYes) {
+    btnYes.style.transform = "scale(1)";
+  }
+  if (hint) {
+    hint.textContent = "Ayo coba pencet kalau bisa~ 😜";
+  }
 }
 
-function drawCake() {
-  const canvas = document.getElementById("cakeCanvas");
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  const W = canvas.width, H = canvas.height;
-  ctx.clearRect(0, 0, W, H);
-  const t = performance.now() / 1000;
-  const cakeX = W * 0.12, cakeW = W * 0.76;
-  const tier1Y = H * 0.38, tier1H = H * 0.34;
-  const g1 = ctx.createLinearGradient(cakeX, tier1Y, cakeX, tier1Y + tier1H);
-  g1.addColorStop(0, "#0f2042"); g1.addColorStop(0.5, "#1e3a8a"); g1.addColorStop(1, "#091224");
-  ctx.fillStyle = g1; ctx.beginPath(); ctx.roundRect(cakeX, tier1Y, cakeW, tier1H, [0,0,14,14]); ctx.fill();
-  ctx.fillStyle = "#2563eb"; ctx.beginPath(); ctx.ellipse(cakeX+cakeW/2, tier1Y, cakeW/2, 14, 0, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = "#dbeafe";
-  for (let i = 0; i < 7; i++) { const dx = cakeX+20+i*(cakeW-30)/6; const dh = 12+(i%3)*6; ctx.beginPath(); ctx.roundRect(dx-5, tier1Y-4, 10, dh, [0,0,5,5]); ctx.fill(); }
-  ctx.fillStyle = "rgba(126, 200, 255, 0.35)"; ctx.fillRect(cakeX, tier1Y+tier1H*0.42, cakeW, tier1H*0.18);
-  const dotColors = ["#fde68a", "#7ec8ff", "#ffffff", "#93c5fd", "#ffe8ee"];
-  for (let i = 0; i < 12; i++) { ctx.fillStyle = dotColors[i%dotColors.length]; ctx.beginPath(); ctx.arc(cakeX+18+i*(cakeW-28)/11, tier1Y+tier1H*0.52, 4, 0, Math.PI*2); ctx.fill(); }
-  const plateG = ctx.createLinearGradient(cakeX-10, tier1Y+tier1H, cakeX-10, tier1Y+tier1H+16);
-  plateG.addColorStop(0, "#e0f2fe"); plateG.addColorStop(1, "#94a3b8");
-  ctx.fillStyle = plateG; ctx.beginPath(); ctx.ellipse(cakeX+cakeW/2, tier1Y+tier1H+6, cakeW/2+14, 10, 0, 0, Math.PI*2); ctx.fill();
-  ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 1.5; ctx.stroke();
-  const candleW = 12, candleH = 38;
-  candleState.forEach((c, i) => {
-    const cx = c.x, baseY = c.y, candleTop = baseY - candleH;
-    const colors = [["#93c5fd","#1d4ed8"],["#fde68a","#d97706"],["#bae6fd","#0284c7"],["#ffe4e6","#f43f5e"],["#e0e7ff","#4338ca"]];
-    const [cLight, cDark] = colors[i % colors.length];
-    const cg = ctx.createLinearGradient(cx-candleW/2, candleTop, cx+candleW/2, candleTop);
-    cg.addColorStop(0, cLight); cg.addColorStop(1, cDark);
-    ctx.fillStyle = cg; ctx.beginPath(); ctx.roundRect(cx-candleW/2, candleTop, candleW, candleH, [3,3,0,0]); ctx.fill();
-    ctx.strokeStyle = "#3a1a0a"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx, candleTop); ctx.lineTo(cx, candleTop-7); ctx.stroke();
-    if (c.lit && !c.extinguishing) {
-      const flicker = Math.sin(t * 8 + c.flickerOffset) * 4;
-      const flicker2 = Math.cos(t * 6 + c.flickerOffset) * 2;
-      const fh = 22 + flicker, fw = 9 + Math.abs(flicker2 * 0.4);
-      const glow = ctx.createRadialGradient(cx+flicker2*0.3, candleTop-fh*0.5, 0, cx, candleTop-fh*0.3, fh*1.2);
-      glow.addColorStop(0, "rgba(255,220,80,0.35)"); glow.addColorStop(1, "rgba(255,100,0,0)");
-      ctx.fillStyle = glow; ctx.beginPath(); ctx.ellipse(cx+flicker2*0.3, candleTop-fh*0.4, fw*1.6, fh*1.2, 0, 0, Math.PI*2); ctx.fill();
-      const fg = ctx.createLinearGradient(cx, candleTop-fh, cx, candleTop);
-      fg.addColorStop(0, "#fff8c0"); fg.addColorStop(0.3, "#ffdd40"); fg.addColorStop(0.7, "#ff8820"); fg.addColorStop(1, "#cc3300");
-      ctx.fillStyle = fg; ctx.beginPath();
-      ctx.moveTo(cx+flicker2*0.5, candleTop-fh);
-      ctx.bezierCurveTo(cx+fw+flicker*0.3, candleTop-fh*0.5, cx+fw*0.6, candleTop-2, cx, candleTop);
-      ctx.bezierCurveTo(cx-fw*0.6, candleTop-2, cx-fw-flicker*0.3, candleTop-fh*0.5, cx+flicker2*0.5, candleTop-fh);
-      ctx.fill();
-      ctx.fillStyle = "rgba(255,255,240,0.85)"; ctx.beginPath(); ctx.ellipse(cx+flicker2*0.3, candleTop-fh*0.45, fw*0.3, fh*0.28, 0, 0, Math.PI*2); ctx.fill();
-    } else if (c.extinguishing) {
-      c.extProgress += 0.06;
-      const scale = Math.max(0, 1 - c.extProgress);
-      if (scale > 0) {
-        ctx.save(); ctx.globalAlpha = scale; ctx.translate(cx, candleTop-10); ctx.scale(scale, scale); ctx.translate(-cx, -(candleTop-10));
-        ctx.fillStyle = "#ffdd40"; ctx.beginPath(); ctx.ellipse(cx, candleTop-12, 4, 8, 0, 0, Math.PI*2); ctx.fill(); ctx.restore();
-      }
-      if (c.extProgress >= 1) {
-        c.lit = false; c.extinguishing = false; candlesBlown++;
-        if (candlesBlown >= CANDLE_COUNT) setTimeout(onAllCandlesBlown, 400);
-      }
-    } else {
-      const smokeT = ((t * 0.8) % 1);
-      ctx.save(); ctx.globalAlpha = (1 - smokeT) * 0.5; ctx.strokeStyle = "#d0c0d0"; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(cx, candleTop-6); ctx.bezierCurveTo(cx+6, candleTop-14, cx-5, candleTop-22, cx+3, candleTop-30-smokeT*20); ctx.stroke(); ctx.restore();
-    }
+function moveLoveNoButton() {
+  const btnNo = document.getElementById("btnLoveNo");
+  const btnYes = document.getElementById("btnLoveYes");
+  const hint = document.getElementById("dodgeHint");
+  if (!btnNo) return;
+
+  loveDodgeAttempts++;
+  btnNo.classList.add("runaway");
+
+  const margin = 40;
+  const btnW = btnNo.offsetWidth || 100;
+  const btnH = btnNo.offsetHeight || 44;
+  const maxX = window.innerWidth - btnW - margin;
+  const maxY = window.innerHeight - btnH - margin;
+
+  const randX = Math.max(margin, Math.floor(Math.random() * maxX));
+  const randY = Math.max(margin, Math.floor(Math.random() * maxY));
+
+  btnNo.style.left = randX + "px";
+  btnNo.style.top = randY + "px";
+
+  const textIdx = Math.min(loveDodgeAttempts, NO_BUTTON_TEXTS.length - 1);
+  btnNo.textContent = NO_BUTTON_TEXTS[textIdx];
+
+  if (btnYes) {
+    const scale = Math.min(1.6, 1 + loveDodgeAttempts * 0.08);
+    btnYes.style.transform = "scale(" + scale + ")";
+  }
+
+  if (hint) {
+    hint.textContent = "Hahaha tombol ini gabisa dipencet! Pencet yang IYA ajaa~ 🥰 (" + loveDodgeAttempts + "x kabur)";
+  }
+}
+
+function handleLoveYes() {
+  const modal = document.getElementById("loveYesModal");
+  if (modal) modal.classList.remove("hidden");
+  triggerHeartShower(50);
+}
+
+function closeLoveYesModal() {
+  const modal = document.getElementById("loveYesModal");
+  if (modal) modal.classList.add("hidden");
+}
+
+// =============================================
+// INTERACTIVE COMPONENT 2: GAME XOXO (TIC-TAC-TOE)
+// =============================================
+let xoxoBoard = Array(9).fill(null);
+let xoxoTurn = "X"; // X = Laura (💖), O = Hapis (💙)
+let xoxoMode = "ai"; // 'ai' or '2p'
+let xoxoScores = { X: 0, O: 0, tie: 0 };
+let xoxoGameOver = false;
+let xoxoAiThinking = false;
+
+const WIN_COMBOS = [
+  [0, 1, 2], [3, 4, 5], [6, 7, 8],
+  [0, 3, 6], [1, 4, 7], [2, 5, 8],
+  [0, 4, 8], [2, 4, 6]
+];
+
+function initXoxoGame() {
+  const cells = document.querySelectorAll(".xoxo-cell");
+  cells.forEach((cell, idx) => {
+    cell.onclick = () => handleXoxoCellClick(idx);
   });
-  cakeAnimFrame = requestAnimationFrame(drawCake);
+  updateXoxoUI();
 }
 
-async function startBlowDetection() {
-  if (isListening) return;
-  if (candleState.every(c => !c.lit && !c.extinguishing)) return;
-  const btn = document.getElementById("micBtn");
-  const hint = document.getElementById("micHint");
-  const meterWrap = document.getElementById("micMeterWrap");
-  const meterBar = document.getElementById("micMeterBar");
-  const meterLabel = document.getElementById("micMeterLabel");
-  try {
-    micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const source = audioCtx.createMediaStreamSource(micStream);
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 512; analyser.smoothingTimeConstant = 0.5;
-    source.connect(analyser);
-    isListening = true;
-    btn.classList.add("listening");
-    btn.querySelector(".mic-label").textContent = "Blow Now!";
-    hint.textContent = "Mic active — blow hard towards your mic! 💨";
-    meterWrap.style.display = "block";
-    const dataArray = new Uint8Array(analyser.fftSize);
-    let blowFrames = 0;
-    function detectBlow() {
-      if (!isListening) return;
-      analyser.getByteTimeDomainData(dataArray);
-      let sum = 0;
-      for (let i = 0; i < dataArray.length; i++) { const v = (dataArray[i]-128)/128; sum += v*v; }
-      const vol = Math.min(100, Math.round(Math.sqrt(sum/dataArray.length)*300));
-      meterBar.style.width = vol + "%";
-      if (vol > BLOW_THRESHOLD) {
-        blowFrames++;
-        meterLabel.textContent = "Keep blowing! 💨💨💨";
-        meterBar.style.background = "linear-gradient(to right, #F5C518, #ff6090)";
-        if (blowFrames >= 3) { blowFrames = 0; blowOutCandle(); }
-      } else {
-        blowFrames = 0;
-        meterBar.style.background = "linear-gradient(to right, #1d4ed8, #7ec8ff, #fde68a)";
-        meterLabel.textContent = vol < 5 ? "Mic ready — blow now!" : "Blow harder… 💨";
+function setXoxoMode(mode) {
+  xoxoMode = mode;
+  const btnAI = document.getElementById("btnModeAI");
+  const btn2P = document.getElementById("btnMode2P");
+  if (btnAI) btnAI.classList.toggle("active", mode === "ai");
+  if (btn2P) btn2P.classList.toggle("active", mode === "2p");
+  resetXoxoBoard();
+}
+
+function handleXoxoCellClick(idx) {
+  if (xoxoGameOver || xoxoBoard[idx] !== null || xoxoAiThinking) return;
+
+  makeXoxoMove(idx, xoxoTurn);
+
+  if (checkXoxoEnd()) return;
+
+  xoxoTurn = xoxoTurn === "X" ? "O" : "X";
+  updateXoxoUI();
+
+  if (xoxoMode === "ai" && xoxoTurn === "O" && !xoxoGameOver) {
+    xoxoAiThinking = true;
+    const status = document.getElementById("xoxoStatus");
+    if (status) status.textContent = "Hapis lagi mikir... 💙";
+
+    setTimeout(() => {
+      const aiMove = getBestAiMove();
+      if (aiMove !== -1) {
+        makeXoxoMove(aiMove, "O");
+        checkXoxoEnd();
+        xoxoTurn = "X";
       }
-      requestAnimationFrame(detectBlow);
+      xoxoAiThinking = false;
+      updateXoxoUI();
+    }, 450);
+  }
+}
+
+function makeXoxoMove(idx, player) {
+  xoxoBoard[idx] = player;
+  const cell = document.querySelector('.xoxo-cell[data-idx="' + idx + '"]');
+  if (cell) {
+    cell.textContent = player === "X" ? "💖" : "💙";
+    cell.disabled = true;
+  }
+}
+
+function checkXoxoEnd() {
+  for (let combo of WIN_COMBOS) {
+    const [a, b, c] = combo;
+    if (xoxoBoard[a] && xoxoBoard[a] === xoxoBoard[b] && xoxoBoard[a] === xoxoBoard[c]) {
+      xoxoGameOver = true;
+      highlightWinningCells(combo);
+      const winner = xoxoBoard[a];
+      xoxoScores[winner]++;
+      updateXoxoScores();
+
+      const status = document.getElementById("xoxoStatus");
+      if (winner === "X") {
+        if (status) status.textContent = "Laura Menang! Kamu yang paling hebat! 🏆💖";
+        triggerHeartShower(40);
+      } else {
+        if (status) status.textContent = "Hapis Menang! Tapi hadiahnya tetap buat kamu! 🎁💙";
+      }
+      return true;
     }
-    detectBlow();
-  } catch {
-    document.getElementById("micHint").textContent = "Cannot access mic. Please allow microphone permission. 🎤";
-    btn.classList.remove("listening");
+  }
+
+  if (!xoxoBoard.includes(null)) {
+    xoxoGameOver = true;
+    xoxoScores.tie++;
+    updateXoxoScores();
+    const status = document.getElementById("xoxoStatus");
+    if (status) status.textContent = "Seri! Memang jodoh kita seimbang banget! 🥰✨";
+    return true;
+  }
+
+  return false;
+}
+
+function highlightWinningCells(combo) {
+  combo.forEach(idx => {
+    const cell = document.querySelector('.xoxo-cell[data-idx="' + idx + '"]');
+    if (cell) cell.classList.add("win-cell");
+  });
+}
+
+function getBestAiMove() {
+  for (let combo of WIN_COMBOS) {
+    const [a, b, c] = combo;
+    if (xoxoBoard[a] === "O" && xoxoBoard[b] === "O" && xoxoBoard[c] === null) return c;
+    if (xoxoBoard[a] === "O" && xoxoBoard[c] === "O" && xoxoBoard[b] === null) return b;
+    if (xoxoBoard[b] === "O" && xoxoBoard[c] === "O" && xoxoBoard[a] === null) return a;
+  }
+  for (let combo of WIN_COMBOS) {
+    const [a, b, c] = combo;
+    if (xoxoBoard[a] === "X" && xoxoBoard[b] === "X" && xoxoBoard[c] === null) return c;
+    if (xoxoBoard[a] === "X" && xoxoBoard[c] === "X" && xoxoBoard[b] === null) return b;
+    if (xoxoBoard[b] === "X" && xoxoBoard[c] === "X" && xoxoBoard[a] === null) return a;
+  }
+  if (xoxoBoard[4] === null) return 4;
+  const available = xoxoBoard.map((val, idx) => val === null ? idx : null).filter(val => val !== null);
+  if (available.length > 0) {
+    return available[Math.floor(Math.random() * available.length)];
+  }
+  return -1;
+}
+
+function updateXoxoScores() {
+  const elX = document.getElementById("scoreX");
+  const elO = document.getElementById("scoreO");
+  const elTie = document.getElementById("scoreTie");
+  if (elX) elX.textContent = xoxoScores.X;
+  if (elO) elO.textContent = xoxoScores.O;
+  if (elTie) elTie.textContent = xoxoScores.tie;
+}
+
+function updateXoxoUI() {
+  const cardX = document.getElementById("scoreCardX");
+  const cardO = document.getElementById("scoreCardO");
+  if (cardX) cardX.classList.toggle("active", xoxoTurn === "X" && !xoxoGameOver);
+  if (cardO) cardO.classList.toggle("active", xoxoTurn === "O" && !xoxoGameOver);
+
+  if (!xoxoGameOver && !xoxoAiThinking) {
+    const status = document.getElementById("xoxoStatus");
+    if (status) {
+      status.textContent = xoxoTurn === "X" ? "Giliran Laura 💖" : (xoxoMode === "ai" ? "Giliran Hapis AI 🤖" : "Giliran Hapis 💙");
+    }
   }
 }
 
-function blowOutCandle() {
-  const next = candleState.find(c => c.lit && !c.extinguishing);
-  if (!next) { stopMic(); return; }
-  next.extinguishing = true;
-  spawnBlowPuff(next.x, next.y - 38);
+function resetXoxoBoard() {
+  xoxoBoard = Array(9).fill(null);
+  xoxoTurn = "X";
+  xoxoGameOver = false;
+  xoxoAiThinking = false;
+
+  const cells = document.querySelectorAll(".xoxo-cell");
+  cells.forEach(cell => {
+    cell.textContent = "";
+    cell.disabled = false;
+    cell.classList.remove("win-cell");
+  });
+
+  updateXoxoUI();
 }
 
-function spawnBlowPuff(x, y) {
-  const container = document.getElementById("smokewrap") || document.body;
-  for (let i = 0; i < 5; i++) {
-    const p = document.createElement("span");
-    p.textContent = ["💨","✨","⭐","💫"][Math.floor(Math.random()*4)];
-    p.style.cssText = `position:absolute;left:${x+(Math.random()-.5)*40}px;top:${y+(Math.random()-.5)*20}px;font-size:${14+Math.random()*10}px;pointer-events:none;animation:puffUp 0.9s ease forwards;z-index:5;`;
-    container.appendChild(p);
-    setTimeout(() => p.remove(), 1000);
+// =============================================
+// INTERACTIVE COMPONENT 3: GAME LUCU (TANGKAP HATIKU)
+// =============================================
+let catchCanvas = null;
+let catchCtx = null;
+let catchAnimFrame = null;
+let catchTimerInterval = null;
+let catchScore = 0;
+const CATCH_TARGET_SCORE = 100;
+let catchTimeLeft = 30;
+let catchGameRunning = false;
+
+let catchPlayer = {
+  x: 180,
+  y: 330,
+  width: 70,
+  height: 38,
+  speed: 8
+};
+
+let catchItems = [];
+let catchFloatTexts = [];
+let keyMoveLeft = false;
+let keyMoveRight = false;
+
+const CATCH_ITEM_TYPES = [
+  { type: "heart", emoji: "💖", points: 10, speed: 2.2, chance: 0.45 },
+  { type: "star", emoji: "⭐", points: 15, speed: 2.8, chance: 0.20 },
+  { type: "letter", emoji: "💌", points: 20, speed: 1.8, chance: 0.15 },
+  { type: "rose", emoji: "🌹", points: 25, speed: 2.4, chance: 0.10 },
+  { type: "cloud", emoji: "🌧️", points: -5, speed: 3.0, chance: 0.10 }
+];
+
+function initCatchGameCanvas() {
+  catchCanvas = document.getElementById("catchCanvas");
+  if (!catchCanvas) return;
+  catchCtx = catchCanvas.getContext("2d");
+
+  window.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") keyMoveLeft = true;
+    if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") keyMoveRight = true;
+  });
+  window.addEventListener("keyup", e => {
+    if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") keyMoveLeft = false;
+    if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") keyMoveRight = false;
+  });
+
+  const updatePointer = (clientX) => {
+    if (!catchCanvas) return;
+    const rect = catchCanvas.getBoundingClientRect();
+    const scaleX = catchCanvas.width / rect.width;
+    const canvasX = (clientX - rect.left) * scaleX;
+    catchPlayer.x = Math.max(catchPlayer.width / 2, Math.min(catchCanvas.width - catchPlayer.width / 2, canvasX));
+  };
+
+  catchCanvas.addEventListener("mousemove", e => {
+    if (catchGameRunning) updatePointer(e.clientX);
+  });
+  catchCanvas.addEventListener("touchmove", e => {
+    if (catchGameRunning && e.touches.length > 0) {
+      updatePointer(e.touches[0].clientX);
+    }
+  }, { passive: true });
+
+  const btnLeft = document.getElementById("btnMoveLeft");
+  const btnRight = document.getElementById("btnMoveRight");
+  if (btnLeft && btnRight) {
+    const bindBtn = (el, isLeft) => {
+      const setTrue = (e) => { e.preventDefault(); if (isLeft) keyMoveLeft = true; else keyMoveRight = true; };
+      const setFalse = (e) => { e.preventDefault(); if (isLeft) keyMoveLeft = false; else keyMoveRight = false; };
+      el.onmousedown = setTrue; el.onmouseup = setFalse; el.onmouseleave = setFalse;
+      el.ontouchstart = setTrue; el.ontouchend = setFalse;
+    };
+    bindBtn(btnLeft, true);
+    bindBtn(btnRight, false);
+  }
+
+  drawCatchStatic();
+}
+
+function drawCatchStatic() {
+  if (!catchCtx || !catchCanvas) return;
+  catchCtx.clearRect(0, 0, catchCanvas.width, catchCanvas.height);
+  drawCatchPlayer();
+}
+
+function startCatchGame() {
+  const startOv = document.getElementById("catchStartOverlay");
+  const winOv = document.getElementById("catchWinOverlay");
+  const loseOv = document.getElementById("catchLoseOverlay");
+  if (startOv) startOv.classList.add("hidden");
+  if (winOv) winOv.classList.add("hidden");
+  if (loseOv) loseOv.classList.add("hidden");
+
+  catchScore = 0;
+  catchTimeLeft = 30;
+  catchItems = [];
+  catchFloatTexts = [];
+  catchGameRunning = true;
+  catchPlayer.x = catchCanvas.width / 2;
+
+  updateCatchStats();
+
+  if (catchTimerInterval) clearInterval(catchTimerInterval);
+  catchTimerInterval = setInterval(() => {
+    if (!catchGameRunning) return;
+    catchTimeLeft--;
+    updateCatchStats();
+
+    if (catchTimeLeft <= 0) {
+      endCatchGame(false);
+    }
+  }, 1000);
+
+  if (catchAnimFrame) cancelAnimationFrame(catchAnimFrame);
+  catchAnimFrame = requestAnimationFrame(catchGameLoop);
+}
+
+function catchGameLoop() {
+  if (!catchGameRunning || !catchCtx || !catchCanvas) return;
+
+  if (keyMoveLeft) catchPlayer.x = Math.max(catchPlayer.width / 2, catchPlayer.x - catchPlayer.speed);
+  if (keyMoveRight) catchPlayer.x = Math.min(catchCanvas.width - catchPlayer.width / 2, catchPlayer.x + catchPlayer.speed);
+
+  if (Math.random() < 0.045 && catchItems.length < 8) {
+    spawnCatchItem();
+  }
+
+  catchCtx.clearRect(0, 0, catchCanvas.width, catchCanvas.height);
+  drawCatchBackground();
+
+  for (let i = catchItems.length - 1; i >= 0; i--) {
+    const item = catchItems[i];
+    item.y += item.speed;
+
+    const basketTop = catchPlayer.y - catchPlayer.height / 2;
+    const basketBottom = catchPlayer.y + catchPlayer.height / 2;
+    const basketLeft = catchPlayer.x - catchPlayer.width / 2;
+    const basketRight = catchPlayer.x + catchPlayer.width / 2;
+
+    if (item.y >= basketTop && item.y <= basketBottom + 10 && item.x >= basketLeft - 10 && item.x <= basketRight + 10) {
+      catchScore = Math.max(0, catchScore + item.points);
+      catchFloatTexts.push({
+        text: (item.points > 0 ? "+" + item.points : "" + item.points),
+        color: item.points > 0 ? "#f472b6" : "#60a5fa",
+        x: item.x,
+        y: item.y,
+        life: 1.0
+      });
+      catchItems.splice(i, 1);
+      updateCatchStats();
+
+      if (catchScore >= CATCH_TARGET_SCORE) {
+        endCatchGame(true);
+        return;
+      }
+      continue;
+    }
+
+    if (item.y > catchCanvas.height + 20) {
+      catchItems.splice(i, 1);
+      continue;
+    }
+
+    catchCtx.font = "24px sans-serif";
+    catchCtx.textAlign = "center";
+    catchCtx.textBaseline = "middle";
+    catchCtx.fillText(item.emoji, item.x, item.y);
+  }
+
+  drawCatchPlayer();
+
+  for (let i = catchFloatTexts.length - 1; i >= 0; i--) {
+    const ft = catchFloatTexts[i];
+    ft.y -= 1.2;
+    ft.life -= 0.025;
+    if (ft.life <= 0) {
+      catchFloatTexts.splice(i, 1);
+      continue;
+    }
+    catchCtx.save();
+    catchCtx.globalAlpha = Math.max(0, ft.life);
+    catchCtx.font = "bold 16px 'Raleway', sans-serif";
+    catchCtx.fillStyle = ft.color;
+    catchCtx.textAlign = "center";
+    catchCtx.fillText(ft.text, ft.x, ft.y);
+    catchCtx.restore();
+  }
+
+  catchAnimFrame = requestAnimationFrame(catchGameLoop);
+}
+
+function spawnCatchItem() {
+  const rand = Math.random();
+  let cumulative = 0;
+  let chosen = CATCH_ITEM_TYPES[0];
+  for (let it of CATCH_ITEM_TYPES) {
+    cumulative += it.chance;
+    if (rand <= cumulative) {
+      chosen = it;
+      break;
+    }
+  }
+
+  catchItems.push({
+    x: 25 + Math.random() * (catchCanvas.width - 50),
+    y: -20,
+    type: chosen.type,
+    emoji: chosen.emoji,
+    points: chosen.points,
+    speed: chosen.speed + Math.random() * 0.8
+  });
+}
+
+function drawCatchPlayer() {
+  if (!catchCtx) return;
+  const px = catchPlayer.x;
+  const py = catchPlayer.y;
+
+  catchCtx.save();
+  catchCtx.font = "32px sans-serif";
+  catchCtx.textAlign = "center";
+  catchCtx.textBaseline = "middle";
+  catchCtx.fillText("🧺", px, py);
+
+  catchCtx.font = "14px sans-serif";
+  catchCtx.fillText("💖", px, py - 6);
+  catchCtx.restore();
+}
+
+function drawCatchBackground() {
+  if (!catchCtx) return;
+  catchCtx.save();
+  catchCtx.fillStyle = "rgba(255, 255, 255, 0.25)";
+  catchCtx.fillRect(40, 50, 2, 2);
+  catchCtx.fillRect(120, 80, 1.5, 1.5);
+  catchCtx.fillRect(280, 40, 2, 2);
+  catchCtx.fillRect(320, 110, 1.5, 1.5);
+  catchCtx.fillRect(200, 140, 2, 2);
+  catchCtx.restore();
+}
+
+function updateCatchStats() {
+  const elScore = document.getElementById("catchScore");
+  const elTimer = document.getElementById("catchTimer");
+  const elProgress = document.getElementById("catchProgress");
+
+  if (elScore) elScore.textContent = catchScore + " / " + CATCH_TARGET_SCORE;
+  if (elTimer) elTimer.textContent = catchTimeLeft + "s";
+  if (elProgress) {
+    const pct = Math.min(100, Math.floor((catchScore / CATCH_TARGET_SCORE) * 100));
+    elProgress.style.width = pct + "%";
   }
 }
 
-function stopMic() {
-  isListening = false;
-  if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
-  if (audioCtx) { audioCtx.close(); audioCtx = null; }
+function endCatchGame(won) {
+  catchGameRunning = false;
+  if (catchTimerInterval) clearInterval(catchTimerInterval);
+  if (catchAnimFrame) cancelAnimationFrame(catchAnimFrame);
+
+  if (won) {
+    const winOv = document.getElementById("catchWinOverlay");
+    if (winOv) winOv.classList.remove("hidden");
+    triggerHeartShower(60);
+  } else {
+    const loseOv = document.getElementById("catchLoseOverlay");
+    if (loseOv) loseOv.classList.remove("hidden");
+  }
 }
 
-function onAllCandlesBlown() {
-  stopMic();
-  document.getElementById("micArea").style.display = "none";
-  document.getElementById("wishGranted").style.display = "block";
-  spawnWishPetals();
-}
-
-function spawnWishPetals() {
+function triggerHeartShower(count = 40) {
   const container = document.getElementById("petals-container");
-  const emojis = ["🩵","💙","⭐","🌟","✨","🦋","🌸","💫","🤍"];
-  for (let i = 0; i < 40; i++) {
+  if (!container) return;
+  const emojis = ["💖", "💕", "🥰", "✨", "⭐", "🌸", "🤍", "🎉", "👑"];
+  for (let i = 0; i < count; i++) {
     setTimeout(() => {
       const p = document.createElement("div");
       p.className = "petal";
-      p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
-      p.style.cssText = `left:${Math.random()*100}%;font-size:${14+Math.random()*20}px;animation-duration:${3+Math.random()*4}s;animation-delay:0s;`;
+      p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      p.style.cssText = "left:" + (Math.random() * 100) + "%;font-size:" + (16 + Math.random() * 22) + "px;animation-duration:" + (2.5 + Math.random() * 3.5) + "s;animation-delay:0s;z-index:9999;";
       container.appendChild(p);
-      setTimeout(() => p.remove(), 8000);
-    }, i * 80);
+      setTimeout(() => p.remove(), 7000);
+    }, i * 60);
   }
 }
+
 
 // === LAVENDER FLOWER CLOSING PAGE ===
 let blueFlowerStarted = false;
